@@ -1,0 +1,15 @@
+{% extends 'studio/base.html' %}
+{% block title %}New series · Story Studio{% endblock %}
+{% block content %}
+<p class="eyebrow">NEW SERIES</p><h1>Start with the idea.</h1>
+<p class="intro">Give the writer enough to find the story. You will review the expanded brief before planning begins.</p>
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+<form class="form-sheet" method="post">{% csrf_token %}
+  <label>Working title<input name="title" maxlength="160" required value="{{ values.title|default:'' }}" placeholder="The Town That Remembered"></label>
+  <label>Premise<textarea name="premise" rows="5" required placeholder="A detective discovers that everyone remembers a brother she never had.">{{ values.premise|default:'' }}</textarea></label>
+  <div class="form-grid"><label>Genre<input name="genre" value="{{ values.genre|default:'' }}" placeholder="Mystery drama"></label><label>Tone<input name="tone" value="{{ values.tone|default:'' }}" placeholder="Tense, intimate"></label></div>
+  <div class="form-grid"><label>Language<input name="language" value="{{ values.language|default:'English' }}"></label><label>Minutes per episode<input type="number" min="5" max="120" name="duration_minutes" value="{{ values.duration_minutes|default:'15' }}"></label></div>
+  <label>Episodes in each season<input name="season_episodes" required value="{{ values.season_episodes|default:'' }}" placeholder="8, 10, 8"><small>One number per season, separated by commas. Example: 8, 10, 8 creates three seasons.</small></label>
+  <div class="form-actions"><button class="button primary" type="submit">Create project</button><a href="{% url 'home' %}">Cancel</a></div>
+</form>
+{% endblock %}

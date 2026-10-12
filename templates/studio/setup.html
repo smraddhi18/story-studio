@@ -1,0 +1,15 @@
+{% extends 'studio/base.html' %}
+{% block title %}Setup · Story Studio{% endblock %}
+{% block content %}
+<p class="eyebrow">LOCAL SETUP</p><h1>Gemini connection</h1>
+<div class="setup-detail">
+  <h2>Server key</h2>
+  {% if key_present %}<p class="status good">GEMINI_API_KEY is available to the server.</p>{% else %}<p class="status warning">GEMINI_API_KEY is missing.</p>{% endif %}
+  <p>The key is read from the local environment and is never sent to the browser.</p>
+  <h2>Model</h2><p><code>{{ model }}</code></p>
+  <h2>Processes</h2><p>Start the web server and worker in separate terminals. The worker handles generation while the browser displays progress.</p>
+  <pre>./run-web.sh
+./run-worker.sh</pre>
+  <p>Copy <code>.env.example</code> to <code>.env</code> and set your AI Studio key before starting either process.</p>
+</div>
+{% endblock %}

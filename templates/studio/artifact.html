@@ -1,0 +1,39 @@
+{% extends 'studio/base.html' %}
+{% block title %}{{ artifact.kind|title }} · Story Studio{% endblock %}
+{% block content %}
+<p class="eyebrow"><a href="{% url 'project' artifact.project.pk %}">{{ artifact.project.title }}</a> / {{ artifact.scope }}</p>
+<div class="page-heading">
+  <div><h1>{{ artifact.kind|title }}</h1><p>Version {{ artifact.version }} · <span class="status {% if artifact.status == 'approved' %}good{% elif artifact.status == 'needs_review' %}warning{% endif %}">{{ artifact.get_status_display }}</span></p></div>
+  {% if artifact.kind == 'script' %}<a class="button" href="/api/projects/{{ artifact.project.pk }}/export?scope={{ artifact.scope }}&format=md">Export script</a>{% endif %}
+</div>
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+{% if latest.pk != artifact.pk %}
+  <div class="alert">This is an older version. <a href="{% url 'artifact' latest.pk %}">Open the latest version.</a></div>
+{% else %}
+<div class="editor-layout">
+  <div class="editor-main">
+    <form method="post" action="{% url 'artifact_save' artifact.pk %}">{% csrf_token %}
+      <label>{% if is_text %}Screenplay text{% else %}Structured content (JSON){% endif %}
+        <textarea class="editor" name="content" spellcheck="false">{{ value }}</textarea>
+      </label>
+      <div class="form-actions"><button class="button" type="submit">Save new version</button></div>
+    </form>
+  </div>
+  <aside class="editor-side">
+    <h3>Review state</h3><p>Approve this version to use it as the current source for later writing.</p>
+    {% if artifact.status != 'approved' %}<form method="post" action="{% url 'artifact_approve' artifact.pk %}">{% csrf_token %}<button class="button primary">Approve version</button></form>{% endif %}
+    <h3>Versions</h3>
+    {% for version in versions %}<p class="version-link"><a href="{% url 'artifact' version.pk %}">Version {{ version.version }}</a> · {{ version.get_status_display }}</p>{% endfor %}
+    {% if artifact.kind == 'script' %}
+      <h3>Continuity review</h3>
+      {% if review %}{% for finding in review.content.findings %}<p class="finding"><strong>{{ finding.category }} · {{ finding.severity }}</strong><br>{{ finding.description }}<br><small>{{ finding.suggested_fix }}</small></p>{% empty %}<p>No specific issues flagged.</p>{% endfor %}{% else %}<p>No review generated yet.</p>{% endif %}
+      {% if scenes %}<h3>Scenes</h3>{% for index, scene in scenes %}
+        <div class="scene-control"><strong>{{ index }}. {{ scene.heading }}</strong>
+          <form method="post" action="{% url 'start_job_page' artifact.project.pk 'scene' %}">{% csrf_token %}<input type="hidden" name="scope" value="{{ artifact.scope }}-scene{{ index }}"><button class="text-button">Regenerate scene</button></form>
+        </div>
+      {% endfor %}{% endif %}
+    {% endif %}
+  </aside>
+</div>
+{% endif %}
+{% endblock %}

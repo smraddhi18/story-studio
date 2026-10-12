@@ -1,0 +1,10 @@
+{% extends 'studio/base.html' %}
+{% block title %}Generation job · Story Studio{% endblock %}
+{% block content %}
+<p class="eyebrow"><a href="{% url 'project' job.project.pk %}">{{ job.project.title }}</a> / GENERATION</p>
+<h1>{{ job.kind|title }} · {{ job.target_scope }}</h1>
+<div class="job-panel" data-job-id="{{ job.pk }}"><div class="job-top"><strong id="job-status">{{ job.get_status_display }}</strong><span id="job-count">{{ job.progress_current }} / {{ job.progress_total }} steps</span></div><div class="progress-track"><div id="job-progress" style="width:{% widthratio job.progress_current job.progress_total 100 %}%"></div></div><p id="job-stage">{{ job.stage|default:'Waiting for worker' }}</p><p id="job-error" class="alert" {% if not job.last_error %}hidden{% endif %}>{{ job.last_error }}</p><p class="meta" id="job-usage"></p></div>
+<form id="retry-form" method="post" action="{% url 'retry_job_page' job.pk %}" {% if job.status != 'failed' and job.status != 'blocked' %}hidden{% endif %}>{% csrf_token %}<button class="button">Retry job</button></form>
+<p class="muted">Generation continues while this page is closed if the worker is running. Completed steps are saved.</p>
+<a href="{% url 'project' job.project.pk %}">Back to project</a>
+{% endblock %}

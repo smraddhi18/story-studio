@@ -1,0 +1,18 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}Story Studio{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'studio.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{% url 'home' %}">Story Studio</a>
+    <nav><a href="{% url 'new_project' %}">New series</a><a href="{% url 'setup' %}">Setup</a></nav>
+  </header>
+  <main class="container">{% block content %}{% endblock %}</main>
+  <script src="{% static 'studio.js' %}" defer></script>
+</body>
+</html>

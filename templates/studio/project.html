@@ -1,0 +1,24 @@
+{% extends 'studio/base.html' %}
+{% block title %}{{ project.title }} · Story Studio{% endblock %}
+{% block content %}
+<p class="eyebrow"><a href="{% url 'home' %}">YOUR SERIES</a> / PROJECT</p>
+<div class="page-heading"><div><h1>{{ project.title }}</h1><p>{{ project.premise }}</p><div class="meta">{{ project.season_episodes|length }} season{{ project.season_episodes|length|pluralize }} · {{ project.episode_count }} episodes · {{ project.duration_minutes }} min target · {{ project.language }}</div></div><a class="button" href="/api/projects/{{ project.pk }}/export?scope=plan&format=md">Export plan</a></div>
+{% if not key_present %}<div class="alert">Set <code>GEMINI_API_KEY</code> on the server, then start the worker to generate text.</div>{% endif %}
+<div class="section-heading"><h2>1. Creative foundation</h2><span>Review and approve the brief before series planning</span></div>
+<div class="foundation-grid">
+  <div class="panel"><h3>Creative brief</h3>{% if brief %}<p>{{ brief.content.logline }}</p><p class="meta">Version {{ brief.version }} · {{ brief.get_status_display }}</p><a class="button" href="{% url 'artifact' brief.pk %}">Review brief</a>{% else %}<p>Expand your premise into characters, conflict and assumptions.</p><form method="post" action="{% url 'start_job_page' project.pk 'brief' %}">{% csrf_token %}<button class="button primary">Generate brief</button></form>{% endif %}</div>
+  <div class="panel"><h3>Series plan</h3>{% if series_arc %}<p>{{ series_arc.content.beginning|truncatechars:200 }}</p><p class="meta">Version {{ series_arc.version }} · {{ series_arc.get_status_display }}</p><a class="button" href="{% url 'artifact' series_arc.pk %}">View series arc</a>{% else %}<p>Build the bible, overall arc, season arcs and every episode outline.</p>{% if brief.status == 'approved' %}<form method="post" action="{% url 'start_job_page' project.pk 'plan' %}">{% csrf_token %}<button class="button primary">Plan entire series</button></form>{% else %}<span class="muted">Approve the brief first</span>{% endif %}{% endif %}</div>
+  {% if bible %}<div class="panel"><h3>Series bible</h3><p>{{ bible.content.series_promise|truncatechars:200 }}</p><p class="meta">Version {{ bible.version }} · {{ bible.get_status_display }}</p><a class="button" href="{% url 'artifact' bible.pk %}">View bible</a></div>{% endif %}
+</div>
+{% for season in seasons %}
+<section class="season">
+  <div class="section-heading"><h2>Season {{ season.number }}</h2>{% if season.arc %}<a href="{% url 'artifact' season.arc.pk %}">View season arc</a>{% endif %}</div>
+  <div class="episode-list">
+  {% for episode in season.episodes %}
+  <div class="episode-row"><div class="episode-number">{{ season.number }}.{{ episode.number }}</div><div class="episode-main"><strong>{% if episode.outline %}{{ episode.outline.content.title }}{% else %}Episode {{ episode.number }}{% endif %}</strong><small>{% if episode.outline %}{{ episode.outline.content.logline|truncatechars:150 }}{% else %}Awaiting series plan{% endif %}</small><div class="meta">{% if episode.outline %}Outline: {{ episode.outline.get_status_display }}{% endif %}{% if episode.script %} · Script: {{ episode.script.get_status_display }}{% endif %}</div></div><div class="episode-actions">{% if episode.outline %}<a href="{% url 'artifact' episode.outline.pk %}">Outline</a>{% endif %}{% if episode.script %}<a href="{% url 'artifact' episode.script.pk %}">Script</a>{% elif episode.outline.status == 'approved' %}<form method="post" action="{% url 'start_job_page' project.pk 'draft' %}">{% csrf_token %}<input type="hidden" name="scope" value="{{ episode.scope }}"><button class="text-button">Draft episode</button></form>{% endif %}</div></div>
+  {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% if jobs %}<section><div class="section-heading"><h2>Recent jobs</h2></div><div class="project-list">{% for job in jobs %}<a class="project-row" href="{% url 'job' job.pk %}"><span><strong>{{ job.kind|title }} · {{ job.target_scope }}</strong><small>{{ job.stage|default:'Waiting to start' }}</small></span><span class="status {% if job.status == 'succeeded' %}good{% elif job.status == 'failed' or job.status == 'blocked' %}warning{% endif %}">{{ job.get_status_display }} · {{ job.progress_current }}/{{ job.progress_total }}</span></a>{% endfor %}</div></section>{% endif %}
+{% endblock %}

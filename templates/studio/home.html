@@ -1,0 +1,22 @@
+{% extends 'studio/base.html' %}
+{% block title %}Projects · Story Studio{% endblock %}
+{% block content %}
+<div class="hero">
+  <div><p class="eyebrow">TEXT GENERATION WORKSPACE</p><h1>Build a series, one decision at a time.</h1><p>Turn a short premise into a planned series. Draft screenplay episodes when you are ready.</p></div>
+  <a class="button primary" href="{% url 'new_project' %}">Create a series</a>
+</div>
+<section class="setup-strip">
+  <strong>Gemini connection</strong>
+  {% if key_present %}<span class="status good">API key available</span>{% else %}<span class="status warning">API key missing</span>{% endif %}
+  <span>Model: {{ model }}</span>
+  <p>The key stays on the server. Set <code>GEMINI_API_KEY</code> and run the worker to process generation jobs.</p>
+</section>
+<div class="section-heading"><h2>Your series</h2><span>{{ projects|length }} projects</span></div>
+{% if projects %}
+<div class="project-list">
+{% for project in projects %}
+  <a class="project-row" href="{% url 'project' project.pk %}"><span><strong>{{ project.title }}</strong><small>{{ project.premise|truncatechars:130 }}</small></span><span>{{ project.season_episodes|length }} season{{ project.season_episodes|length|pluralize }} · {{ project.episode_count }} episodes</span></a>
+{% endfor %}
+</div>
+{% else %}<p class="empty">Create a series to begin with a short premise.</p>{% endif %}
+{% endblock %}
